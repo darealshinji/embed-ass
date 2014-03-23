@@ -71,6 +71,8 @@ if [ "$(`which uuencode-simple`)" = "" ] ; then
         echo "Can't find 'uuencode-simple'"
         exit 0
     fi
+else
+    uuencoder="uuencode-simple"
 fi
 
 
