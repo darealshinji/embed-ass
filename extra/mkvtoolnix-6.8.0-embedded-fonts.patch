@@ -1,0 +1,101 @@
+--- a/src/input/subtitles.cpp
++++ b/src/input/subtitles.cpp
+@@ -522,22 +522,17 @@
+   attachment.description  = (boost::format(SSA_SECTION_FONTS == section ? Y("Imported font from %1%") : Y("Imported picture from %1%")) % short_name).str();
+   attachment.to_all_files = true;
+ 
+-  size_t allocated        = 1024;
+-  attachment.data         = memory_c::alloc(allocated);
+-  attachment.data->set_size(0);
+-
+-  const unsigned char *p  = (const unsigned char *)data_uu.c_str();
+-  for (pos = 0; data_uu.length() > (pos + 4); pos += 4)
+-    decode_chars(p[pos], p[pos + 1], p[pos + 2], p[pos + 3], attachment.data, 3, allocated);
+-
+-  switch (data_uu.length() % 4) {
+-    case 2:
+-      decode_chars(p[pos], p[pos + 1], 0, 0, attachment.data, 1, allocated);
+-      break;
+-    case 3:
+-      decode_chars(p[pos], p[pos + 1], p[pos + 2], 0, attachment.data, 2, allocated);
+-      break;
+-  }
++  size_t data_size        = data_uu.length() % 4; 
++  data_size               = 3 == data_size ? 2 : 2 == data_size ? 1 : 0; 
++  data_size              += data_uu.length() / 4 * 3; 
++  attachment.data         = memory_c::alloc(data_size); 
++  auto out                = attachment.data->get_buffer(); 
++  auto in                 = reinterpret_cast<unsigned char const *>(data_uu.c_str()); 
++
++  for (auto end = in + (data_uu.length() / 4) * 4; in < end; in += 4, out += 3) 
++    decode_chars(in, out, 4); 
++
++  decode_chars(in, out, data_uu.length() % 4); 
+ 
+   attachment.mime_type = guess_mime_type(name, false);
+ 
+@@ -551,29 +546,20 @@
+ }
+ 
+ void
+-ssa_parser_c::decode_chars(unsigned char c1,
+-                           unsigned char c2,
+-                           unsigned char c3,
+-                           unsigned char c4,
+-                           memory_cptr &buffer,
+-                           size_t bytes_to_add,
+-                           size_t &allocated) {
+-  unsigned char bytes[3];
+-
+-  uint32_t value = ((c1 - 33) << 18) + ((c2 - 33) << 12) + ((c3 - 33) << 6) + (c4 - 33);
+-  bytes[2]       =  value & 0x0000ff;
+-  bytes[1]       = (value & 0x00ff00) >>  8;
+-  bytes[0]       = (value & 0xff0000) >> 16;
+-
+-  if ((buffer->get_size() + bytes_to_add) > allocated) {
+-    int old_size  = buffer->get_size();
+-    allocated    += 1024;
+-    buffer->resize(allocated);
+-    buffer->set_size(old_size);
+-  }
++ssa_parser_c::decode_chars(unsigned char const *in, 
++                           unsigned char *out, 
++                           size_t bytes_in) { 
++  if (!bytes_in) 
++    return; 
++
++  size_t bytes_out = 4 == bytes_in ? 3 : 3 == bytes_in ? 2 : 1; 
++  uint32_t value   = 0; 
++
++  for (size_t idx = 0; idx < bytes_in; ++idx) 
++    value |= (static_cast<uint32_t>(in[idx]) - 33) << (6 * (3 - idx)); 
+ 
+-  memcpy(buffer->get_buffer() + buffer->get_size(), bytes, bytes_to_add);
+-  buffer->set_size(buffer->get_size() + bytes_to_add);
++  for (size_t idx = 0; idx < bytes_out; ++idx) 
++    out[idx] = (value >> ((2 - idx) * 8)) & 0xff;
+ }
+ 
+ // ------------------------------------------------------------
+--- a/src/input/subtitles.h
++++ b/src/input/subtitles.h
+@@ -142,7 +142,7 @@
+   std::string get_element(const char *index, std::vector<std::string> &fields);
+   std::string recode_text(std::vector<std::string> &fields);
+   void add_attachment_maybe(std::string &name, std::string &data_uu, ssa_section_e section);
+-  void decode_chars(unsigned char c1, unsigned char c2, unsigned char c3, unsigned char c4, memory_cptr &buffer, size_t bytes_to_add, size_t &allocated);
++  void decode_chars(unsigned char const *in, unsigned char *out, size_t bytes_in);
+ };
+ typedef std::shared_ptr<ssa_parser_c> ssa_parser_cptr;
+ 
+--- a/tests/results.txt
++++ b/tests/results.txt
+@@ -58,7 +58,7 @@
+ T_209ac3misdeetected_as_mpeges:c893d43ae3577570260fadc0f6fb54c4:passed:20050315-092851:0.126988029
+ T_210splitting_and_chapters:5bf5b16a92aeeb74a24a5ba3d77a50cb-f542801d5e936bb2eecf9c6e1a832345-c008bdd8b5a8aadc15780723e1064d99-eee29d558c22e0feb738db6aec7c7e65:passed:20050406-165104:0.330168467
+ T_211bug_segfault_reading_mp4:342b9a8d37967209e9f90250a148cc48:passed:20050728-083402:0.139717571
+-T_212ssa_attachments:080a8be10c724a49bd000ac130ac7f5e-9a5a5ed80808c9d448ca5b44b640d8aa-c9a562c38a809df96ba6bd78220bb930-6ee73fb6f296ec5a9d9322c8ec556bc3-12587ba032abeed8d43f7c26245c40cb:passed:20050824-131320:0.97327624
++T_212ssa_attachments:36a2408ef863159fcdca690c7465b5f3-9a5a5ed80808c9d448ca5b44b640d8aa-2c8ef428ff00aeea74ee10d12a3702b5-63703180da67852a7ecf01c118869ed8-12587ba032abeed8d43f7c26245c40cb:passed:20050824-131320:0.97327624
+ T_213mp4_broken_pixel_dimensions:2e3bfee9ea899238fa0d9d96ba66945c:passed:20050919-094831:0.167783191
+ T_214one_frame_avi:036fdbdc91ce3c061aa04eb8910ff1e7:passed:20051004-192755:0.039489971
+ T_215X_codec_extradata_avi:324b8054fd47e9a3f7fb2b20687d8897-3fabc505fdd377c05ce4557b1bc13545:passed:20051004-194707:0.052219855
