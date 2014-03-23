@@ -20,7 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+
 script="embed-ass"
+uuencoder="uuencode-simple"
 
 if [ "$(`which mkvmerge`)" = "" ] ; then
     echo "Can't find 'mkvmerge'"
@@ -36,11 +38,13 @@ else
     echo "'mkvextract' found"
 fi
 
-if [ ! -f "uuencode-simple" ] ; then
-    echo "Can't find 'uuencode-simple'. Run 'make' first."
-    exit 0
+if [ "$(`which $uuencoder`)" = "" ] ; then
+    if [ ! -f "uuencode-simple" ] ; then
+        echo "Can't find '$uuencoder'. Run 'make && make clean' first."
+        exit 0
+    fi
 else
-    echo "'uuencode-simple' found"
+    echo "'$uuencoder' found"
 fi
 
 if [ ! -f "$script" ] ; then

@@ -64,15 +64,14 @@ fi
 
 
 ######################  attach  #######################
-if [ "$(`which uuencode-simple`)" = "" ] ; then
-    if [ -f "./uuencode-simple" ] ; then
-        uuencoder="./uuencode-simple"
+uuencoder="uuencode-simple"
+if [ "$(`which $uuencoder`)" = "" ] ; then
+    if [ -f "./$uuencoder" ] ; then
+        uuencoder="./$uuencoder"
     else
-        echo "Can't find 'uuencode-simple'"
+        echo "Can't find '$uuencoder'"
         exit 0
     fi
-else
-    uuencoder="uuencode-simple"
 fi
 
 if [ ! -f "$2" ] ; then
