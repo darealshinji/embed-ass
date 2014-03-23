@@ -75,7 +75,6 @@ else
     uuencoder="uuencode-simple"
 fi
 
-
 if [ ! -f "$2" ] ; then
     echo "Target \"$2\" is not a file!"
     exit 0;
@@ -103,5 +102,4 @@ echo -e "\n" >> "out.tmp"
 cat "out.tmp" "out1.tmp" > "${assdir}/${assfile%.*}_fonts_attached.ass"
 rm "out.tmp" "out1.tmp"
 ######################################################
-
 
