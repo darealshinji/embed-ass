@@ -18,7 +18,7 @@ which is already included here and can be compiled with `make && make clean`.
 
 It uses mkvtoolnix to extract them (kinda lame, but reliable).
 However, the current stable version currupts the checksums of ass attachments.
-Do fix that, you either need to patch the source code of
+To fix that, you either need to patch the source code of
 mkvtoolnix-6.8.0 (you can find the patch file in the 'extra' folder),
 or you compile from the current Git version: `git clone git://github.com/mbunkus/mkvtoolnix.git`.
 Ubuntu users can find patched packages at https://launchpad.net/~djcj/+archive/mkvtoolnix.
