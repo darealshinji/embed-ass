@@ -27,7 +27,7 @@ if [ "$1" = "" ] || [ "$2" = "" ] ; then
     echo "  $0 <file> <ass_file>"
     echo ""
     echo "Extract attachments from ASS subtitles:"
-    echo "  $0 -e <ass_file>"
+    echo "  $0 -x <ass_file>"
     exit 0;
 fi
 
@@ -60,7 +60,11 @@ if [ "$1" = "-x" ] ; then
     rm in.txt
 
     for f in ./* ; do
-        out=`grep -e 'fontname: ' "$f" | sed 's/fontname: //; s/_0././g'`
+        #out=`grep -e 'fontname: ' "$f" | sed 's/fontname: //; s/_0././g'`
+        getname=`grep -e 'fontname: ' "$f" | sed 's/fontname: //g'`
+        ext="${getname##*.}"
+        name="${getname%.*}"
+        out="${name%??}.$ext"
         awk 'NR>1' "$f" | tr -d '\r' | tr -d '\n' >"$out.tmp1"
         sed -e "s/.\{80\}/&\r\n/g" < "$out.tmp1" > "$out.tmp2"
         rm "$out.tmp1"

@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: embed-ass
 Upstream-Contact: djcj <djcj@gmx.de>
-Source: https://gist.github.com/darealshinji/9690928
+Source: https://github.com/darealshinji/embed-ass
 
 Files: *
 Copyright:

@@ -3,7 +3,8 @@ uuencode-simple
 *.bin
 *.ass
 *.tmp*
+
 bin
 bins
 test
-
+*_attachments
