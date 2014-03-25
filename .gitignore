@@ -1,0 +1,9 @@
+uuencode-simple
+*.o
+*.bin
+*.ass
+*.tmp*
+bin
+bins
+test
+
