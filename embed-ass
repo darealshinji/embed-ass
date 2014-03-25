@@ -31,39 +31,6 @@ if [ "$1" = "" ] || [ "$2" = "" ] ; then
     exit 0;
 fi
 
-
-####################### extract #######################
-if [ "$1" = "-e" ] ; then
-    if [ "$(`which mkvmerge`)" = "" ] && [ "$(`which mkvextract`)" = "" ] ; then
-        echo "Can't find 'mkvmerge' or 'mkvextract'"
-        exit 0
-    else
-        assfile="`basename "${2}"`"
-        cd "`dirname "${2}"`"
-
-        mkvmerge -o "${assfile}.mks" "$assfile" >/dev/null
-        mkdir -p "${assfile}_attachments" && cd "${assfile}_attachments"
-
-        max=`LC_ALL=C mkvmerge -i "../${assfile}.mks" | grep -e 'Attachment ID' | tail -n1 | cut -d ' ' -f3 | tr -d ':'`
-        for i in `seq 1 $max` ; do
-            mkvextract attachments "../${assfile}.mks" "$i" >/dev/null
-        done
-
-        for f in ./* ; do
-            ext="`basename "${f##*.}"`"
-            file="`basename "${f%.*}"`"
-            file="`echo ${file:0:-2}`"
-            mv "$f" "${file}.${ext}"
-        done
-
-        rm "../${assfile}.mks"
-    fi
-    exit 0
-fi
-#######################################################
-
-
-######################  attach  #######################
 uuencoder="uuencode-simple"
 if [ "$(`which $uuencoder`)" = "" ] ; then
     if [ -f "./$uuencoder" ] ; then
@@ -74,6 +41,44 @@ if [ "$(`which $uuencoder`)" = "" ] ; then
     fi
 fi
 
+
+####################### extract #######################
+if [ "$1" = "-x" ] ; then
+    if [ ! -f "$2" ] ; then
+        echo "Target \"$2\" is not a file!"
+        exit 0;
+    fi
+
+    mkdir -p "${2}_attachments"
+    cd "${2}_attachments"
+    awk '/\[Fonts\]/{n++}{print >"out" n ".txt" }' "../$2"
+    awk 'NR>1' out1.txt >in.txt
+    rm out.txt out1.txt
+    awk '/\[Events\]/{n++}{print >"out" n ".txt" }' in.txt
+    rm in.txt && mv out.txt in.txt
+    awk '/fontname: /{n++}{print >"out" n ".txt" }' in.txt
+    rm in.txt
+
+    for f in ./* ; do
+        out=`grep -e 'fontname: ' "$f" | sed 's/fontname: //; s/_0././g'`
+        awk 'NR>1' "$f" | tr -d '\r' | tr -d '\n' >"$out.tmp1"
+        sed -e "s/.\{80\}/&\r\n/g" < "$out.tmp1" > "$out.tmp2"
+        rm "$out.tmp1"
+    done
+    rm out?.txt
+    cd ..
+
+    for f in "${2}_attachments"/* ; do
+        $uuencoder -d "$f" -o "${f%.*}"
+    done
+
+    rm "${2}_attachments/"*.tmp2
+    exit 0
+fi
+#######################################################
+
+
+######################  attach  #######################
 if [ ! -f "$2" ] ; then
     echo "Target \"$2\" is not a file!"
     exit 0;

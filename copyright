@@ -3,7 +3,6 @@ Upstream-Name: embed-ass
 Upstream-Contact: djcj <djcj@gmx.de>
 Source: https://gist.github.com/darealshinji/9690928
 
-
 Files: *
 Copyright:
   2014 djcj <djcj@gmx.de>
@@ -13,12 +12,6 @@ Files: uuencode-simple.c
 Copyright:
   2014 Christoph "Youka" Spanknebel <https://github.com/Youka/UUEncode-simple>
 License: Zlib
-
-Files: extra/mkvtoolnix-6.8.0-embedded-fonts.patch
-Copyright:
-  2014 Moritz Bunkus <moritz@bunkus.org>
-License: GPL-2+
-
 
 License: MIT
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -58,20 +51,3 @@ License: Zlib
    .
    3. This notice may not be removed or altered from any source
    distribution.
-
-License: GPL-2+
- This package is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
- .
- This package is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- .
- On Debian systems, the complete text of the GNU General Public
- License can be found in `/usr/share/common-licenses/GPL-2'.
- .
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
