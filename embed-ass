@@ -22,91 +22,160 @@
 
 
 if [ "$1" = "" ] || [ "$2" = "" ] ; then
+
     echo "Attach files to ASS subtitles:"
     echo "  $0 <directory> <ass_file>"
     echo "  $0 <file> <ass_file>"
     echo ""
     echo "Extract attachments from ASS subtitles:"
     echo "  $0 -x <ass_file>"
-    exit 0;
+
+    exit 0
+
 fi
+
 
 uuencoder="uuencode-simple"
 if [ "$(`which $uuencoder`)" = "" ] ; then
-    if [ -f "./$uuencoder" ] ; then
-        uuencoder="./$uuencoder"
+
+    if [ -f $(cd $(dirname "$0") && pwd -P)/"$uuencoder" ] ; then
+
+        uuencoder=$(cd $(dirname "$0") && pwd -P)/"$uuencoder"
+
     else
+
         echo "Can't find '$uuencoder'"
+
         exit 0
+
     fi
+
 fi
 
 
 ####################### extract #######################
+
 if [ "$1" = "-x" ] ; then
+
     if [ ! -f "$2" ] ; then
+
         echo "Target \"$2\" is not a file!"
-        exit 0;
+
+        exit 0
+
     fi
 
     mkdir -p "${2}_attachments"
     cd "${2}_attachments"
+
     awk '/\[Fonts\]/{n++}{print >"out" n ".txt" }' "../$2"
     awk 'NR>1' out1.txt >in.txt
     rm out.txt out1.txt
+
     awk '/\[Events\]/{n++}{print >"out" n ".txt" }' in.txt
     rm in.txt && mv out.txt in.txt
+
     awk '/fontname: /{n++}{print >"out" n ".txt" }' in.txt
     rm in.txt
 
     for f in ./* ; do
+
         getname=`grep -e 'fontname: ' "$f" | sed 's/fontname: //g'`
         ext="${getname##*.}"
         name="${getname%.*}"
         out="${name%??}.$ext"
+
         awk 'NR>1' "$f" | tr -d '\r' | tr -d '\n' >"$out.tmp1"
         sed -e "s/.\{80\}/&\r\n/g" < "$out.tmp1" > "$out.tmp2"
         rm "$out.tmp1"
+
     done
+
     rm out?.txt
     cd ..
 
     for f in "${2}_attachments"/* ; do
+
         $uuencoder -d "$f" -o "${f%.*}"
+
     done
 
     rm "${2}_attachments/"*.tmp2
+
     exit 0
+
 fi
+
 #######################################################
 
 
 ######################  attach  #######################
+
 if [ ! -f "$2" ] ; then
+
     echo "Target \"$2\" is not a file!"
-    exit 0;
+
+    exit 0
+
 fi
 
-awk '/\[Events\]/{n++}{print >"out" n ".tmp" }' "$2"
-echo "[Fonts]" >> "out.tmp"
 
 if [ -d "$1" ] ; then
+
+    temp_files="${2}_tmp"
+    mkdir -p "${temp_files}"
+
+    awk "/\[Events\]/{n++}{print >\"$temp_files/out\" n \".tmp\" }" "$2"
+    echo "[Fonts]" >> "${temp_files}/out.tmp"
+
     for f in "$1"/* ; do
+
         filename=$(basename "${f%.*}")
-        echo "fontname: ${filename}_0.${f##*.}" >> "out.tmp"
-        "$uuencoder" -e "$f" >> "out.tmp"
-        echo "" >> "out.tmp"
+
+        echo "fontname: ${filename}_0.${f##*.}" >> "${temp_files}/out.tmp"
+        "$uuencoder" -e "$f" >> "${temp_files}/out.tmp"
+        echo "" >> "${temp_files}/out.tmp"
+
     done
-else
+
+    assfile="`basename "${2}"`"
+    assdir="`dirname "${2}"`"
+
+    echo -e "\n" >> "${temp_files}/out.tmp"
+    cat "${temp_files}/out.tmp" "${temp_files}/out1.tmp" > "${assdir}/${assfile%.*}_fonts_attached.ass"
+    rm -r "${temp_files}"
+
+    exit 0
+
+elif [ -f "$1" ] ; then
+
+    temp_files="${2}_tmp"
+    mkdir -p "${temp_files}"
+
+    awk "/\[Events\]/{n++}{print >\"$temp_files/out\" n \".tmp\" }" "$2"
+    echo "[Fonts]" >> "${temp_files}/out.tmp"
+
     filename=$(basename "${1%.*}")
-    echo "fontname: ${filename}_0.${1##*.}" >> "out.tmp"
-    "$uuencoder" -e "$1" >> "out.tmp"
+
+    echo "fontname: ${filename}_0.${1##*.}" >> "${temp_files}/out.tmp"
+    "$uuencoder" -e "$1" >> "${temp_files}/out.tmp"
+
+    assfile="`basename "${2}"`"
+    assdir="`dirname "${2}"`"
+
+    echo -e "\n" >> "${temp_files}/out.tmp"
+    cat "${temp_files}/out.tmp" "${temp_files}/out1.tmp" > "${assdir}/${assfile%.*}_fonts_attached.ass"
+    rm -r "${temp_files}"
+
+    exit 0
+
+else
+
+    echo "Can't find '$1'"
+
+    exit 0
+
 fi
 
-assfile="`basename "${2}"`"
-assdir="`dirname "${2}"`"
-echo -e "\n" >> "out.tmp"
-cat "out.tmp" "out1.tmp" > "${assdir}/${assfile%.*}_fonts_attached.ass"
-rm "out.tmp" "out1.tmp"
 ######################################################
 
