@@ -60,7 +60,6 @@ if [ "$1" = "-x" ] ; then
     rm in.txt
 
     for f in ./* ; do
-        #out=`grep -e 'fontname: ' "$f" | sed 's/fontname: //; s/_0././g'`
         getname=`grep -e 'fontname: ' "$f" | sed 's/fontname: //g'`
         ext="${getname##*.}"
         name="${getname%.*}"
