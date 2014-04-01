@@ -14,4 +14,4 @@ embed-ass
 
 
 To convert the fonts, it uses UUEncode-simple from Youka (https://github.com/Youka/UUEncode-simple)
-which is already included here and can be compiled with `make && make clean`.
+which is already included here and can be compiled with `make`.
