@@ -1,6 +1,6 @@
 embed-ass
 ===============
-**embed-ass** is a shell script that allows you to embed fonts into ass files and to extract them.
+**embed-ass** is a Bash script that allows you to embed fonts into ass files and to extract them.
 
 **Command line arguments:**<br>
 `embed-ass <directory> <ass_file>` `attach files from directory`<br>
@@ -13,5 +13,10 @@ embed-ass
 `embed-ass -x my/data/subtitles.ass`<br>
 
 
+**Installation:**<br>
+Run `make check` and then `make install` to install the files to /usr/bin or `make install-local`
+to install them to /usr/local/bin.
+
+
 To convert the fonts, it uses UUEncode-simple from Youka (https://github.com/Youka/UUEncode-simple)
-which is already included here and can be compiled with `make`.
+which is already included here.

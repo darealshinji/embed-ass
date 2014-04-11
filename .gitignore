@@ -1,10 +1,7 @@
 uuencode-simple
 *.o
 *.bin
-*.ass
 *.tmp*
+*.txt
 
-bin
-bins
-test
 *_attachments

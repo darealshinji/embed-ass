@@ -21,6 +21,22 @@
 # THE SOFTWARE.
 
 
+uuencoder="uuencode-simple"
+
+if [ "$(`which $uuencoder`)" = "" ] ; then
+
+    if [ -f $(cd $(dirname "$0") && pwd -P)/"$uuencoder" ] ; then
+
+        uuencoder=$(cd $(dirname "$0") && pwd -P)/"$uuencoder"
+
+    else
+
+        echo "Can't find '$uuencoder'"
+        exit 1
+    fi
+fi
+
+
 if [ "$1" = "" ] || [ "$2" = "" ] ; then
 
     echo "Attach files to ASS subtitles:"
@@ -34,22 +50,6 @@ if [ "$1" = "" ] || [ "$2" = "" ] ; then
 fi
 
 
-uuencoder="uuencode-simple"
-
-if [ "$(`which $uuencoder`)" = "" ] ; then
-
-    if [ -f $(cd $(dirname "$0") && pwd -P)/"$uuencoder" ] ; then
-
-        uuencoder=$(cd $(dirname "$0") && pwd -P)/"$uuencoder"
-
-    else
-
-        echo "Can't find '$uuencoder'"
-        exit 0
-    fi
-fi
-
-
 ####################### extract #######################
 
 if [ "$1" = "-x" ] ; then
@@ -57,14 +57,18 @@ if [ "$1" = "-x" ] ; then
     if [ ! -f "$2" ] ; then
 
         echo "Target \"$2\" is not a file!"
-        exit 0
+        exit 1
     fi
 
-    mkdir -p "${2}_attachments"
+    mkdir "${2}_attachments" >& /dev/null
+    if test $? = 1 ; then
+        echo "Directory '${2}_attachments' already exists."
+        exit 1
+    fi
     cd "${2}_attachments"
 
     awk '/\[Fonts\]/{n++}{print >"out" n ".txt" }' "../$2"
-    awk 'NR>1' out1.txt >in.txt
+    awk 'NR>1' out1.txt > in.txt
     rm out.txt out1.txt
 
     awk '/\[Events\]/{n++}{print >"out" n ".txt" }' in.txt
@@ -104,13 +108,14 @@ fi
 if [ ! -f "$2" ] ; then
 
     echo "Target \"$2\" is not a file!"
-    exit 0
+    exit 1
 fi
 
 
 if [ -d "$1" ] ; then
 
-    temp_files="${2}_tmp"
+    # $RANDOM is an internal Bash function
+    temp_files="${RANDOM}_${2}_tmp"
     mkdir -p "${temp_files}"
 
     awk "/\[Events\]/{n++}{print >\"$temp_files/out\" n \".tmp\" }" "$2"
@@ -158,7 +163,7 @@ elif [ -f "$1" ] ; then
 else
 
     echo "Can't find '$1'"
-    exit 0
+    exit 1
 fi
 
 ######################################################

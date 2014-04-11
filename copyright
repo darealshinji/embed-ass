@@ -13,6 +13,10 @@ Copyright:
   2014 Christoph "Youka" Spanknebel <https://github.com/Youka/UUEncode-simple>
 License: Zlib
 
+Files: test/*
+License: public-domain
+ These files are given to the public domain.
+
 License: MIT
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
