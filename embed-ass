@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # Copyright (c) 2014, djcj <djcj@gmx.de>
 #
@@ -22,19 +22,6 @@
 
 
 uuencoder="uuencode-simple"
-
-if [ "$(`which $uuencoder`)" = "" ] ; then
-
-    if [ -f $(cd $(dirname "$0") && pwd -P)/"$uuencoder" ] ; then
-
-        uuencoder=$(cd $(dirname "$0") && pwd -P)/"$uuencoder"
-
-    else
-
-        echo "Can't find '$uuencoder'"
-        exit 1
-    fi
-fi
 
 
 if [ "$1" = "" ] || [ "$2" = "" ] ; then
