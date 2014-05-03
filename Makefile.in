@@ -1,0 +1,29 @@
+DESTDIR := ___DESTDIR___
+
+PROGRAMS = embed-ass uuencode-simple
+DOCS = copyright README.md
+DIRS = $(DESTDIR)/bin $(DESTDIR)/share/doc/embed-ass
+
+all: clean
+	gcc -O2 -Os -Wall -c uuencode-simple.c -o uuencode-simple.o
+	g++ uuencode-simple.o -o uuencode-simple -s
+
+clean:
+	rm -f uuencode-simple uuencode-simple.o
+	test/test.sh clean >/dev/null
+
+distclean: clean
+	rm Makefile
+
+check: all
+	test/test.sh
+
+install: all
+	install -m755 -d $(DIRS)
+	install -m755 $(PROGRAMS) $(DESTDIR)/bin
+	install -m644 $(DOCS) $(DESTDIR)/share/doc/embed-ass
+
+uninstall:
+	cd $(DESTDIR)/bin && rm -f $(PROGRAMS)
+	rm -rf $(DESTDIR)/share/doc/embed-ass
+

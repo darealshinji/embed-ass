@@ -1,0 +1,21 @@
+#!/bin/sh
+
+case "$1" in
+    --help)
+        echo "Options:"
+        echo "    --prefix=PREFIX  [default: /usr/local]"
+        exit 0
+        ;;
+    --prefix*)
+        DESTDIR="`echo "$1" | cut -d '=' -f 2`"
+        ;;
+    *)
+        DESTDIR="/usr/local"
+        ;;
+esac
+
+sed -e "s@___DESTDIR___@$DESTDIR@g" Makefile.in > Makefile
+
+echo "Prefix: $DESTDIR"
+echo "Now run 'make check install'"
+echo "To deinstall the program run 'make uninstall'"

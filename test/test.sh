@@ -27,7 +27,8 @@ echo "original  md5: $original"
 echo "extracted md5: $extracted"
 
 if test $original = $extracted; then
-   echo "It works! Run '${0} clean' to delete temporary files."
+   echo "It works!"
 else
    echo "Oops! Something went wrong."
+   exit 1
 fi

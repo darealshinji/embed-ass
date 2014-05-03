@@ -14,8 +14,8 @@ embed-ass
 
 
 **Installation:**<br>
-Run `make check` and then `make install` to install the files to /usr/bin or `make install-local`
-to install them to /usr/local/bin.
+Run `./configure` and then `make check install`. You can specify a target directory
+with the --prefix option, i.e: `./configure --prefix=/usr`
 
 
 To convert the fonts, it uses UUEncode-simple from Youka (https://github.com/Youka/UUEncode-simple)
