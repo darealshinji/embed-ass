@@ -1,21 +1,43 @@
 #!/bin/sh
 
+if test x"$1" = x"-h" -o x"$1" = x"--help" ; then
+cat << EOF
+Usage: ./configure [options]
+
+options:
+  -h, --help               print this message
+
+  --prefix=PREFIX          install architecture-independent files into PREFIX
+                           [/usr/local]
+
+  --bash=PATH              path to the Bash environment [autodetect]
+EOF
+exit 1
+fi
+
+autobash=$(which bash) || autobash='/usr/bin/env bash'
 case "$1" in
-    --help)
-        echo "Options:"
-        echo "    --prefix=PREFIX  [default: /usr/local]"
-        exit 0
-        ;;
     --prefix*)
-        DESTDIR="`echo "$1" | cut -d '=' -f 2`"
+        PREFIX="`echo "$1" | cut -d '=' -f 2`"
+        ;;
+    --bash*)
+        bash="$1"
         ;;
     *)
-        DESTDIR="/usr/local"
         ;;
 esac
+test -n "$PREFIX" || PREFIX="/usr/local"
+test -n "$bash"   || bash=$autobash
 
-sed -e "s@___DESTDIR___@$DESTDIR@g" Makefile.in > Makefile
+echo "PREFIX = $PREFIX" > Makefile
+cat Makefile.in >> Makefile
 
-echo "Prefix: $DESTDIR"
+echo "#!$bash" > embed-ass
+cat src/embed-ass.in >> embed-ass
+chmod 0755 embed-ass
+
+echo "Prefix: $PREFIX"
+echo "Bash: $bash"
 echo "Now run 'make check install'"
 echo "To deinstall the program run 'make uninstall'"
+

@@ -1,15 +1,16 @@
-DESTDIR := ___DESTDIR___
+PROGRAM = uuencode-simple
+SCRIPT  = embed-ass
+DOCS    = copyright README.md
+BINDIR  = $(DESTDIR)$(PREFIX)/bin
+CFLAGS += -Wall -Werror
 
-PROGRAMS = embed-ass uuencode-simple
-DOCS = copyright README.md
-DIRS = $(DESTDIR)/bin $(DESTDIR)/share/doc/embed-ass
+all: $(PROGRAM)
 
-all: clean
-	gcc -O2 -Os -Wall -c uuencode-simple.c -o uuencode-simple.o
-	g++ uuencode-simple.o -o uuencode-simple -s
+$(PROGRAM):
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ src/$@.c
 
 clean:
-	rm -f uuencode-simple uuencode-simple.o
+	rm -f $(PROGRAM) $(SCRIPT)
 	test/test.sh clean >/dev/null
 
 distclean: clean
@@ -19,11 +20,12 @@ check: all
 	test/test.sh
 
 install: all
-	install -m755 -d $(DIRS)
-	install -m755 $(PROGRAMS) $(DESTDIR)/bin
-	install -m644 $(DOCS) $(DESTDIR)/share/doc/embed-ass
+	install -m755 -d $(BINDIR) $(DESTDIR)$(PREFIX)/share/doc/embed-ass
+	install -m755 $(PROGRAM) src/$(SCRIPT) $(BINDIR)
+	install -m644 $(DOCS) $(DESTDIR)$(PREFIX)/share/doc/embed-ass
 
 uninstall:
-	cd $(DESTDIR)/bin && rm -f $(PROGRAMS)
-	rm -rf $(DESTDIR)/share/doc/embed-ass
+	rm -f $(BINDIR)/$(PROGRAM)
+	rm -f $(BINDIR)/$(SCRIPT)
+	rm -rf $(DESTDIR)$(PREFIX)/share/doc/embed-ass
 

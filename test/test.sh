@@ -22,7 +22,7 @@ echo "Extract binary file..."
 echo "done."
 
 original=$(md5sum --binary test.bin | cut -d ' ' -f1)
-extracted=$(md5sum --binary test_fonts_attached.ass_attachments/test.bin | cut -d ' ' -f1) &&
+extracted=$(md5sum --binary test_fonts_attached.ass_attachments/test.bin | cut -d ' ' -f1)
 echo "original  md5: $original"
 echo "extracted md5: $extracted"
 
