@@ -1,5 +1,7 @@
 
-# Copyright (c) 2014, djcj <djcj@gmx.de>
+set -e
+
+# Copyright (c) 2014-2015, djcj <djcj@gmx.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +23,9 @@
 
 
 uuencoder="uuencode-simple"
+in="${1}"
+ass="${2}"
+tmp="`date +%N`"
 
 if [ "$(`which $uuencoder`)" = "" ] ; then
 
@@ -36,7 +41,7 @@ if [ "$(`which $uuencoder`)" = "" ] ; then
 fi
 
 
-if [ "$1" = "" ] || [ "$2" = "" ] ; then
+if [ "$in" = "" ] || [ "$ass" = "" ] ; then
 
     echo "Attach files to ASS subtitles:"
     echo "  $0 <directory> <ass_file>"
@@ -49,24 +54,24 @@ if [ "$1" = "" ] || [ "$2" = "" ] ; then
 fi
 
 
-####################### extract #######################
+### extract ###
 
-if [ "$1" = "-x" ] ; then
+if [ "$in" = "-x" ] ; then
 
-    if [ ! -f "$2" ] ; then
+    if [ ! -f "$ass" ] ; then
 
-        echo "Target \"$2\" is not a file!"
+        echo "Target \"$ass\" is not a file!"
         exit 1
     fi
 
-    mkdir "${2}_attachments" >& /dev/null
+    mkdir "${ass}_attachments" >& /dev/null
     if test $? = 1 ; then
-        echo "Directory '${2}_attachments' already exists."
+        echo "Directory '${ass}_attachments' already exists."
         exit 1
     fi
-    cd "${2}_attachments"
+    cd "${ass}_attachments"
 
-    awk '/\[Fonts\]/{n++}{print >"out" n ".txt" }' "../$2"
+    awk '/\[Fonts\]/{n++}{print >"out" n ".txt" }' "../$ass"
     awk 'NR>1' out1.txt > in.txt
     rm out.txt out1.txt
 
@@ -90,80 +95,50 @@ if [ "$1" = "-x" ] ; then
     rm out?.txt
     cd ..
 
-    for f in "${2}_attachments"/* ; do
+    for f in "${ass}_attachments"/* ; do
     
         $uuencoder -d "$f" -o "${f%.*}"
     done
 
-    rm "${2}_attachments/"*.tmp2
+    rm "${ass}_attachments/"*.tmp2
     exit 0
 fi
 
-#######################################################
 
 
-######################  attach  #######################
+###  attach  ###
 
-if [ ! -f "$2" ] ; then
-
-    echo "Target \"$2\" is not a file!"
+if [ ! -f "$ass" ] ; then
+    echo "Target \"$ass\" is not a file!"
     exit 1
 fi
 
+assfile="`basename "$ass"`"
+assdir="`dirname "$ass"`"
+out="${assdir}/${assfile%.*}_fonts_attached.ass"
 
-if [ -d "$1" ] ; then
+echo "[Fonts]" >> "$tmp"
 
-    # $RANDOM is an internal Bash function
-    temp_files="${RANDOM}_${2}_tmp"
-    mkdir -p "${temp_files}"
-
-    awk "/\[Events\]/{n++}{print >\"$temp_files/out\" n \".tmp\" }" "$2"
-    echo "[Fonts]" >> "${temp_files}/out.tmp"
-
-    for f in "$1"/* ; do
+if [ -d "$in" ] ; then
+    for f in "$in"/* ; do
         filename=$(basename "${f%.*}")
-
-        echo "fontname: ${filename}_0.${f##*.}" >> "${temp_files}/out.tmp"
-        "$uuencoder" -e "$f" >> "${temp_files}/out.tmp"
-        echo "" >> "${temp_files}/out.tmp"
+        echo "fontname: ${filename}_0.${f##*.}" >> "$tmp"
+        "$uuencoder" -e "$f" >> "$tmp"
+        printf "\n" >> "$tmp"
     done
-
-    assfile="`basename "${2}"`"
-    assdir="`dirname "${2}"`"
-
-    echo -e "\n" >> "${temp_files}/out.tmp"
-    cat "${temp_files}/out.tmp" "${temp_files}/out1.tmp" > "${assdir}/${assfile%.*}_fonts_attached.ass"
-    rm -r "${temp_files}"
-
-    exit 0
-
-elif [ -f "$1" ] ; then
-
-    temp_files="${2}_tmp"
-    mkdir -p "${temp_files}"
-
-    awk "/\[Events\]/{n++}{print >\"$temp_files/out\" n \".tmp\" }" "$2"
-    echo "[Fonts]" >> "${temp_files}/out.tmp"
-
-    filename=$(basename "${1%.*}")
-
-    echo "fontname: ${filename}_0.${1##*.}" >> "${temp_files}/out.tmp"
-    "$uuencoder" -e "$1" >> "${temp_files}/out.tmp"
-
-    assfile="`basename "${2}"`"
-    assdir="`dirname "${2}"`"
-
-    echo -e "\n" >> "${temp_files}/out.tmp"
-    cat "${temp_files}/out.tmp" "${temp_files}/out1.tmp" > "${assdir}/${assfile%.*}_fonts_attached.ass"
-    rm -r "${temp_files}"
-
-    exit 0
-
+elif [ -f "$in" ] ; then
+    filename=$(basename "${in%.*}")
+    echo "fontname: ${filename}_0.${in##*.}" >> "$tmp"
+    "$uuencoder" -e "$in" >> "$tmp"
+    printf "\n" >> "$tmp"
 else
-
-    echo "Can't find '$1'"
+    echo "Can't find '$in'"
     exit 1
 fi
 
-######################################################
-
+echo "" >> "$tmp"
+echo "[Events]" >> "$tmp"
+cp "$ass" "$out"
+sed -i -e "s/\[Events\]/@DELETEME@/; /@DELETEME@/r "$tmp"" -e "/@DELETEME@/d" "$out"
+rm "$tmp"
+exit 0
