@@ -42,7 +42,7 @@ void ass_uuencode(FILE* in, FILE* out){
         dst[3] = (src[2] & 0x3f) + 33;
         wrote_line += fwrite(dst, 1, MIN(read+1,sizeof(dst)), out);
         if(wrote_line == 80 && !feof(in)){
-            fwrite("\r\n", 1, 2, out);
+            fwrite("\n", 1, 1, out);
             wrote_line = 0;
         }
     }
